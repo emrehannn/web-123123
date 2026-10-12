@@ -69,7 +69,15 @@ export default function Hero() {
         <a href="#project-walkin" className="hero__featured">
           <span className="signal-dot signal-dot--hero" aria-hidden="true" />
           In development <span className="hero__featured-name">Walkin</span>
-          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><path d="M6 18 18 6M6 6h12v12" /></svg>
+          <Image
+            className="hero__featured-icon"
+            src="/images/walkin-icon.png"
+            alt=""
+            width={56}
+            height={56}
+            sizes="56px"
+            preload
+          />
         </a>
         <motion.div className="hero__footer" {...stagger(3)}>
           <p className="hero__intro">

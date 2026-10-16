@@ -8,7 +8,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: lastModified.home,
       changeFrequency: "monthly",
       priority: 1,
-      images: [`${siteUrl}/images/walkin-about-hero.png`, `${siteUrl}/images/walkin-wallpaper.png`],
+      images: [`${siteUrl}/images/hero/walkin-about-hero-1920.jpg`, `${siteUrl}/images/walkin-wallpaper.png`],
     },
     {
       url: `${siteUrl}/walkin/development-journey`,

@@ -8,7 +8,7 @@ const SOCIAL_LINKS = [
   { id: "x", label: "X", href: "https://x.com/walkin_games" },
   { id: "instagram", label: "Instagram", href: "https://www.instagram.com/walkingames" },
   { id: "youtube", label: "YouTube", href: "https://www.youtube.com/@walkingames-01" },
-  { id: "tiktok", label: "TikTok", href: "https://www.tiktok.com/@walkingames" },
+  { id: "tiktok", label: "TikTok", href: "https://www.tiktok.com/@walkin.games" },
 ] as const;
 
 const SOCIAL_GLYPHS: Record<string, ReactNode> = {

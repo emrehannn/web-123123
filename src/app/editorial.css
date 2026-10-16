@@ -96,10 +96,144 @@ h1, h2, h3, h4 { text-wrap: balance; }
 .hero__title > span { display: block; }
 .hero__title > span:first-child { color: var(--white); }
 .hero__outline { color: transparent; -webkit-text-stroke: 1px var(--white); margin-left: 0; }
-.hero__outline em { display: block; width: max-content; color: var(--accent); -webkit-text-stroke: 0; font-style: normal; margin-left: 0; }
+/* Note: the fill interpolates in oklab (below), which keeps coral → deep purple vivid
+   instead of letting it pass through grey. A plain-gradient declaration sits in front
+   of it as the fallback for engines that don't understand the `in oklab` syntax. */
+/* ── "moving." — neon heat ──
+   Three passes on one word, and the paint order does the work:
+     1. the word itself casts the magenta bloom (text-shadow) and stays otherwise
+        transparent, so the bloom never tints the letters;
+     2. ::before mirrors the word across the baseline into drifting liquid smoke: the
+        melt therefore starts exactly where the letters end, never above them;
+     3. ::after paints the roving heat fill on top (gradient + grain blended in).
+
+   The two copies are grown past the glyphs and padded back (`inset` + `padding`), so
+   their background box covers the ink that overflows the 0.83 line box — otherwise the
+   round letters get their tops shaved off and the bloom shows through the gap.
+
+   Tuning knobs: --heat-glow / --heat-deep for the palette, --heat-melt for how far the
+   melt reaches. Only background-position, transform and opacity animate. */
+.hero__outline em {
+  --heat-glow: #ff5553;
+  --heat-deep: #240f42;
+  --heat-melt: 1.42;
+  position: relative;
+  display: block;
+  width: max-content;
+  color: transparent;
+  text-shadow:
+    0 0 10px rgba(255, 85, 83, .5),
+    0 0 24px rgba(255, 60, 90, .44),
+    0 0 52px rgba(150, 40, 130, .4),
+    0 0 96px rgba(70, 25, 110, .38),
+    0 20px 46px rgba(255, 85, 83, .3);
+  -webkit-text-stroke: 0;
+  font-style: normal;
+  margin-left: 0;
+}
+.hero__outline em::before,
+.hero__outline em::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: -0.16em 0 -0.12em;
+  padding: 0.16em 0 0.12em;
+  text-shadow: none;
+  pointer-events: none;
+}
+/* the melt: the word's reflection stretched below the baseline, softened into smoke,
+   drifting sideways on an uneven, slow path while its colours sink — dark and
+   see-through at the far end */
+.hero__outline em::before {
+  /* Neon streams: yellow right under the letters, sinking through orange and magenta
+     into violet — the darkness comes from fading out, never from dark paint. */
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.6' numOctaves='4' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='.5'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"),
+    radial-gradient(56% 28% at 34% 72%, rgba(255, 120, 110, .45), rgba(255, 85, 83, 0) 72%),
+    linear-gradient(180deg, rgba(36, 15, 66, 0) 3%, rgba(80, 30, 120, .5) 18%, rgba(150, 40, 130, .72) 33%, rgba(255, 85, 83, .9) 52%, rgba(255, 105, 95, 1) 68%, #ff5553 79%, #ff7a6e 90%);
+  background-size: 200px 200px, 130% 100%, 100% 118%;
+  background-position: 0 0, 0 0, 0 0%;
+  background-repeat: repeat, no-repeat, no-repeat;
+  background-blend-mode: soft-light, screen, normal;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: var(--heat-glow);
+  transform: scaleY(calc(-1 * var(--heat-melt))) skewX(.9deg);
+  transform-origin: 50% 78%; /* baseline: 85% of the old box, 78% once the box is grown */
+  /* the SVG turbulence does the flowing warp; the blur softens its edges, and the
+     second mask layer feathers the left/right silhouette so the streams dissolve
+     into the page instead of stopping on a hard vertical cut */
+  filter: url(#hero-melt-warp) blur(7px) saturate(1.3);
+  opacity: .84;
+  mix-blend-mode: screen;
+  -webkit-mask-image:
+    linear-gradient(180deg, transparent 7%, rgba(0, 0, 0, .42) 30%, rgba(0, 0, 0, .85) 56%, #000 76%, rgba(0, 0, 0, .45) 92%, transparent 100%),
+    linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, .5) 3%, #000 9%, #000 91%, rgba(0, 0, 0, .5) 97%, transparent 100%);
+  mask-image:
+    linear-gradient(180deg, transparent 7%, rgba(0, 0, 0, .42) 30%, rgba(0, 0, 0, .85) 56%, #000 76%, rgba(0, 0, 0, .45) 92%, transparent 100%),
+    linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, .5) 3%, #000 9%, #000 91%, rgba(0, 0, 0, .5) 97%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+  /* two motions, deliberately on co-prime clocks so the loop never reads as a loop */
+  animation: hero-heat-melt 19s ease-in-out infinite, hero-smoke-drift 38s cubic-bezier(.4, 0, .6, 1) infinite;
+}
+/* the fill — the "flow" pattern from the reference component: the palette is laid out
+   as coral → deep purple → coral (same colour at both ends, so the loop is seamless),
+   painted at 300% and pushed across with an eased ping-pong. Because the ends match, the
+   motion never snaps; because the ramp interpolates in oklab, it stays vivid instead of
+   passing through grey. Layers, top to bottom: grain, sheen, top light, body. */
+.hero__outline em::after {
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='.55'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    linear-gradient(102deg, rgba(255, 255, 255, 0) 34%, rgba(255, 236, 226, .34) 47%, rgba(255, 255, 255, 0) 60%),
+    linear-gradient(180deg, rgba(255, 216, 206, .28) 0%, rgba(255, 216, 206, 0) 18%),
+    linear-gradient(270deg, #ff5553 0%, #ff5553 3%, rgba(36, 15, 66, .78) 16.65%, rgba(36, 15, 66, .78) 19.65%, #ff5553 33.3%, #ff5553 36.3%, rgba(36, 15, 66, .78) 49.95%, rgba(36, 15, 66, .78) 52.95%, #ff5553 66.6%, #ff5553 69.6%, rgba(36, 15, 66, .78) 83.25%, rgba(36, 15, 66, .78) 86.25%, #ff5553 100%);
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='.55'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    linear-gradient(102deg, rgba(255, 255, 255, 0) 34%, rgba(255, 236, 226, .34) 47%, rgba(255, 255, 255, 0) 60%),
+    linear-gradient(180deg, rgba(255, 216, 206, .28) 0%, rgba(255, 216, 206, 0) 18%),
+    linear-gradient(in oklab 270deg, #ff5553 0%, #ff5553 3%, rgba(36, 15, 66, .78) 16.65%, rgba(36, 15, 66, .78) 19.65%, #ff5553 33.3%, #ff5553 36.3%, rgba(36, 15, 66, .78) 49.95%, rgba(36, 15, 66, .78) 52.95%, #ff5553 66.6%, #ff5553 69.6%, rgba(36, 15, 66, .78) 83.25%, rgba(36, 15, 66, .78) 86.25%, #ff5553 100%);
+  background-size: 140px 140px, 320% 100%, 100% 100%, 300% 300%;
+  background-position: 0 0, 0% 50%, 0 0, 0% 50%;
+  background-repeat: repeat, no-repeat, no-repeat, no-repeat;
+  background-blend-mode: overlay, soft-light, normal, normal;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  will-change: background-position;
+  animation: hero-liquid 24s linear infinite;
+}
+/* One direction only. The ramp repeats exactly every 33.3%, and the travel below moves
+   the image by two of those repeats, so the loop closes on itself instead of snapping
+   back — no ping-pong, no seam. */
+@keyframes hero-liquid {
+  from { background-position: 0 0, 0% 50%, 0 0, 0% 50%; }
+  to { background-position: 0 0, 100% 50%, 0 0, 100% 50%; }
+}
+@keyframes hero-heat-melt {
+  0%, 100% { transform: scaleY(calc(-1 * var(--heat-melt))) skewX(.6deg) translateX(0); opacity: .82; }
+  28% { transform: scaleY(calc(-1 * (var(--heat-melt) + .12))) skewX(-1.1deg) translateX(-.7%); opacity: .88; }
+  55% { transform: scaleY(calc(-1 * (var(--heat-melt) + .05))) skewX(.25deg) translateX(.5%); opacity: .8; }
+  78% { transform: scaleY(calc(-1 * (var(--heat-melt) + .09))) skewX(1deg) translateX(-.3%); opacity: .86; }
+}
+/* the smoke: uneven stops on a long clock — the soft plumes wander left and right and
+   the colours sink, so the drift never looks like a metronome */
+@keyframes hero-smoke-drift {
+  0% { background-position: 0 0, 0 0, 0 0%; }
+  11% { background-position: 40px 0, 44px 0, 0 11%; }
+  26% { background-position: -32px 0, -36px 0, 0 25%; }
+  39% { background-position: 18px 0, 20px 0, 0 36%; }
+  57% { background-position: -48px 0, -46px 0, 0 49%; }
+  71% { background-position: 30px 0, 34px 0, 0 62%; }
+  86% { background-position: -20px 0, -22px 0, 0 75%; }
+  94% { background-position: 22px 0, 24px 0, 0 82%; }
+  100% { background-position: 0 0, 0 0, 0 0%; }
+}
 .hero__cinema { position: absolute; inset: 0; width: 100%; max-width: none; margin: 0; padding: 0; overflow: hidden; }
-.hero__image-wrap { position: absolute; inset: -80px 0 0; z-index: -2; }
-.hero__image { object-fit: cover; object-position: 65% center; }
+.hero__filters { position: absolute; width: 0; height: 0; overflow: hidden; }
+.hero__image-wrap { position: absolute; inset: -80px 0 0; z-index: -2; background: var(--ink); }
+.hero__image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 65% center; }
 .hero__shade { position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, #000e 0%, #0007 40%, transparent 76%), linear-gradient(0deg, #000 0%, #0008 17%, transparent 55%, #0005); }
 .hero__featured { position: absolute; top: 140px; right: var(--gutter); display: grid; grid-template-columns: 6px max-content 56px; align-items: center; column-gap: 12px; width: max-content; padding: 16px 0; border-top: 1px dotted #ffffff60; font: 9px/1.5 var(--font-mono); text-transform: uppercase; }
 .hero__featured-name { grid-column: 2; font: 34px/1.1 var(--font-display); margin-top: 5px; }
@@ -280,6 +414,23 @@ h1, h2, h3, h4 { text-wrap: balance; }
   [data-reveal="true"] { opacity: 1 !important; transform: none !important; }
 }
 
+/* The opening sequence of the About screen is the same deal: the hidden state
+   exists only inside a CSS animation that browsers without reduced-motion support
+   (or with animations switched off) simply never apply — so the headline, the
+   intro copy and the buttons are readable in every case, scripts or not. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero__eyebrow, .hero__title > span, .hero__footer, .hero__actions > * { animation: hero-intro .5s var(--ease) backwards; }
+  .hero__actions > * { animation-name: hero-intro-button; animation-duration: .6s; }
+  .hero__eyebrow { animation-delay: .2s; }
+  .hero__title > span:first-child { animation-delay: .28s; }
+  .hero__title > span:last-child { animation-delay: .36s; }
+  .hero__footer { animation-delay: .44s; }
+  .hero__actions > *:first-child { animation-delay: .72s; }
+  .hero__actions > *:last-child { animation-delay: .78s; }
+  @keyframes hero-intro { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+  @keyframes hero-intro-button { from { opacity: 0; transform: scale(.92); } to { opacity: 1; transform: none; } }
+}
+
 
 @media (max-width: 1099px) {
   .nav-links { gap: 18px; }
@@ -391,6 +542,12 @@ h1, h2, h3, h4 { text-wrap: balance; }
   .hero-stage { height: auto; min-height: 0; }
   .hero { position: relative; }
   .games-section { margin-top: 0; }
+  /* Explicit exception, requested by the studio: the About headline keeps its slow
+     heat/liquid drift even for reduce-motion visitors (the previous version did the
+     same with `!important`). Delete these two rules to hand the choice back to the
+     visitor's system setting. */
+  .hero__outline em::after { animation: hero-liquid 24s linear infinite !important; }
+  .hero__outline em::before { animation: hero-heat-melt 19s ease-in-out infinite, hero-smoke-drift 38s cubic-bezier(.4, 0, .6, 1) infinite !important; }
 }
 @media (min-width: 480px) and (max-width: 760px) {
   .hero__featured { display: none; }

@@ -7,20 +7,23 @@ export type JourneyMedia = {
 };
 
 const mediaRoot = "/media/walkin-journey";
-const clip = (name: string, alt: string, height: number): JourneyMedia => ({
+const clip = (name: string, alt: string, height = 960): JourneyMedia => ({
   src: `${mediaRoot}/${name}.mp4`,
   poster: `${mediaRoot}/${name}.webp`,
   alt,
-  width: 640,
+  width: 540,
   height,
 });
 
 export const journeyMedia = {
-  brooklyn: clip("brooklyn", "A rooftop hideout above the neon-lit streets of Brooklyn.", 594),
-  combat: clip("combat", "A survivor runs between abandoned cars, aiming into an approaching zombie crowd.", 556),
-  cards: clip("cards", "The in-run upgrade carousel presents a choice of cards before the run continues.", 738),
-  interface: clip("interface", "Walkin's live mobile interface, from the rooftop menu to character and equipment screens.", 1386),
-  progression: clip("progression", "Progression and mission screens with rewards, currency and persistent navigation.", 1386),
+  brooklyn: clip("brooklyn", "A survivor sits on a rooftop ledge above Brooklyn before jumping down onto the bridge road to begin the run."),
+  foundation: clip("foundation", "A survivor runs across the Brooklyn bridge at night, weaving between zombie crowds, wrecked cars and road hazards."),
+  cards: clip("cards", "Walkin's upgrade cards collection screen showing ability and weapon cards being inspected and upgraded."),
+  interface: clip("interface", "Walkin's live mobile interface on the rooftop, connecting character selection, weapon loadouts and upgrades."),
+  progression: clip("progression", "Opening a reward crate on the rooftop to unlock a mask collectible, followed by the in-game shop and consumables."),
+  survival: clip("survival", "Survivors fight and evade through a crowded bridge and tunnel using weapons, syringes and survival tools."),
+  gameloop: clip("gameloop", "A continuous run loop: fighting zombies on the road, choosing from the in-run upgrade card carousel, and continuing the run."),
+  today: clip("today", "Survivors run down a neon-lit Brooklyn street lined with Walkin billboards, firing into an approaching zombie horde."),
 };
 
 export type JourneyMilestone = {
@@ -47,7 +50,7 @@ export const milestones: JourneyMilestone[] = [
     detail: "High-volume simulation lives in DOTS. Game flow stays flexible in a hybrid Unity architecture.",
     tags: ["Unity ECS", "Rukhanka", "First encounters"],
     caption: "The foundation / movement, enemies, animation",
-    layout: "wide", media: journeyMedia.combat,
+    layout: "portrait", media: journeyMedia.foundation,
   },
   {
     id: "upgrades", month: "April", dateTime: "2026-04", phase: "Player progression",
@@ -55,7 +58,7 @@ export const milestones: JourneyMilestone[] = [
     body: "Surviving became a series of choices. Upgrade cards gave each run a direction: change your weapon, strengthen an ability, or build around the next encounter.",
     detail: "Data-driven upgrades leave room for new combinations. Blender, Figma and Photoshop support the visual iteration behind each choice.",
     tags: ["Upgrade cards", "Run-by-run choices"],
-    caption: "Choose your next upgrade",
+    caption: "Choose and upgrade your cards",
     layout: "split", media: journeyMedia.cards,
   },
   {
@@ -82,8 +85,8 @@ export const milestones: JourneyMilestone[] = [
     body: "Combat became more than shooting. Medkits, bombs and usable items expanded the choices available when the road became crowded.",
     detail: "Fight, evade, or spend a resource. The goal is pressure that asks for a decision, not just a faster road.",
     tags: ["Fight", "Evade", "Use your resources"],
-    caption: "The survival loop / gameplay still, not an item demonstration",
-    layout: "still", media: journeyMedia.combat,
+    caption: "The survival loop / fight, evade and use your tools",
+    layout: "split", media: journeyMedia.survival,
   },
   {
     id: "game-loop", month: "August", dateTime: "2026-08", phase: "Connecting the experience",
@@ -92,7 +95,7 @@ export const milestones: JourneyMilestone[] = [
     detail: "The important step was not another isolated feature. It was making the hand-off between systems feel like one continuous game.",
     tags: ["Run", "Choose", "Continue"],
     caption: "Run. Choose. Adapt. Keep going.",
-    layout: "sequence", media: journeyMedia.cards,
+    layout: "sequence", media: journeyMedia.gameloop,
   },
   {
     id: "today", month: "September", dateTime: "2026-09", phase: "Where Walkin is today",
@@ -101,6 +104,6 @@ export const milestones: JourneyMilestone[] = [
     detail: "Still in development. The foundation is playable; the wider world of enemies, hazards and bosses is the direction ahead, not a claim of finished content.",
     tags: ["Playable foundation", "In development"],
     caption: "Current gameplay / September 2026 development journal",
-    layout: "wide", media: journeyMedia.combat,
+    layout: "portrait", media: journeyMedia.today,
   },
 ];

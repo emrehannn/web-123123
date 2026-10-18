@@ -222,6 +222,12 @@ export default function Hero() {
             />
           ) : null}
         </motion.div>
+        {/* The gentle darkening pass over the artwork: a third of black at the bottom
+            edge, thinning upward and gone by two thirds, so the picture settles into the
+            page without the halftone over the crowd losing its brightness. It needs no
+            radius of its own — it only paints, and the plate below already clips the
+            picture at its bottom corners. */}
+        <div className="hero__shade" aria-hidden="true" />
         <a href="#project-walkin" className="hero__featured">
           <span className="signal-dot signal-dot--hero" aria-hidden="true" />
           In development <span className="hero__featured-name">Walkin</span>

@@ -232,19 +232,27 @@ h1, h2, h3, h4 { text-wrap: balance; }
 }
 .hero__cinema { position: absolute; inset: 0; width: 100%; max-width: none; margin: 0; padding: 0; overflow: hidden; }
 .hero__filters { position: absolute; width: 0; height: 0; overflow: hidden; }
-.hero__image-wrap { position: absolute; inset: -80px 0 0; z-index: -2; background: var(--ink); }
+/* The plate rounds its bottom corners to answer the sections below, which all round
+   their top edge by 32px and slide up under their neighbour — the hero is the first
+   block in that stack, so the seam between it and the next one reads as a card edge.
+   Its radius runs a third larger than theirs — 48 against 32 — because the picture is a
+   full bleed: the same arc reads shallower across a photograph than across a flat
+   panel. `overflow: hidden` is what makes the radius bite: the artwork and the dither
+   canvas both fill this box edge to edge. */
+.hero__image-wrap { position: absolute; inset: -80px 0 0; z-index: -2; background: var(--ink); border-radius: 0 0 48px 48px; overflow: hidden; }
 .hero__image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 65% center; }
 /* The dither canvas covers the <img> it is drawn from. It is the last child of the
    wrapper, so it paints over the artwork without needing a z-index of its own — the
    wrapper's stacking context keeps both of them behind the headline and the links.
    Selector is doubled up so it beats the utility classes the component ships with. */
 .hero__image-wrap .hero__veil { position: absolute; inset: 0; }
-/* Note: the hero once carried a `.hero__shade` scrim here — two gradients, up to 93%
-   black, meant to keep the headline off the photograph. It came back briefly, when the
-   dither veil started driving itself instead of waiting for a cursor, and left again:
-   the print lives exactly where the scrim is darkest (full black along the bottom edge
-   is where the crowd prints), and dimming it read as muddier rather than calmer. If a
-   bright source image ever lands here, this is the first thing to bring back. */
+/* The darkening pass the hero carries over its artwork, back by request and reshaped:
+   the old scrim ran to full black along the base and up, and the print over the crowd
+   lives exactly where it was darkest, so this one is a third of that weight at the
+   bottom edge and gone by two thirds of the way up — nothing at the top, where the
+   headline sits over the sky. It paints above the dither veil (z-index -1 over the
+   plate's -2), so what it holds back it holds back from the halftone as well. */
+.hero__shade { position: absolute; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(0deg, #0000004d 0%, #00000021 30%, transparent 66%); }
 .hero__featured { position: absolute; top: 140px; right: var(--gutter); display: grid; grid-template-columns: 6px max-content 56px; align-items: center; column-gap: 12px; width: max-content; padding: 16px 0; border-top: 1px dotted #ffffff60; font: 9px/1.5 var(--font-mono); text-transform: uppercase; }
 .hero__featured-name { grid-column: 2; font: 34px/1.1 var(--font-display); margin-top: 5px; }
 .hero__featured-icon { grid-column: 3; grid-row: 1/3; width: 56px; height: 56px; border-radius: 9px; object-fit: cover; transition: transform .3s; }

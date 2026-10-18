@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useRef } from "react";
+import dynamic from "next/dynamic";
+import { useRef, useSyncExternalStore } from "react";
 import {
   motion,
   useReducedMotion,
@@ -25,6 +26,39 @@ const backgroundSrcSet = (format: string) =>
     .map((width) => `${heroBackground.src}-${width}.${format} ${width}w`)
     .join(", ");
 
+/* ─── dither veil ───
+   The artwork behind the headline gets its own WebGL pass: a two-tone halftone that
+   the cursor prints onto the photograph and that fades back out behind it. Four
+   deliberate limits:
+
+     · it is loaded as its own client chunk, so ogl never touches the critical path;
+     · it never runs for a reduce-motion visitor;
+     · it never runs for a touch pointer — a phone has no hover and no fine cursor, so
+       it would only ever be stuck in the idle state;
+     · it reads the AVIF the browser has already chosen from the <picture> below,
+       which makes the texture a cache hit rather than a second download.
+
+   It also mounts a tick after the first paint, so the plain <img> above stays both the
+   LCP element and the thing that is left if any of the above says no. */
+const DitherVeil = dynamic(() => import("./DitherVeil"), { ssr: false });
+
+const veilImage = `${heroBackground.src}-${heroBackground.fallbackWidth}.avif`;
+
+/* The two conditions the veil needs from the visitor: a mouse, and permission to move.
+   Both are read through `useSyncExternalStore` rather than an effect, because the answer
+   has to be `false` for the server render *and* for the hydration pass — mounting the
+   canvas any earlier tears the whole tree down over a mismatch. Module scope keeps the
+   two functions stable, and it means the veil also follows a settings change live. */
+const VEIL_MEDIA = ["(prefers-reduced-motion: no-preference)", "(hover: hover) and (pointer: fine)"] as const;
+const readVeilMedia = () => VEIL_MEDIA.map((query) => window.matchMedia(query));
+const subscribeVeilMedia = (onChange: () => void) => {
+  const queries = readVeilMedia();
+  queries.forEach((query) => query.addEventListener("change", onChange));
+  return () => queries.forEach((query) => query.removeEventListener("change", onChange));
+};
+const veilAllowed = () => readVeilMedia().every((query) => query.matches);
+const veilUnavailable = () => false;
+
 /* The opening intro is a CSS animation (`hero-intro` in editorial.css) rather than a
    JS-driven one: nothing in the markup ships a hidden state, so the headline, the
    intro copy and the buttons stay readable when animations are off, when the visitor
@@ -33,6 +67,10 @@ const backgroundSrcSet = (format: string) =>
 export default function Hero() {
   const prefersReducedMotion = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
+
+  /* The veil mounts a tick after hydration at the earliest, so the plain <img> below
+     stays both the LCP element and the thing that is left if either condition says no. */
+  const showVeil = useSyncExternalStore(subscribeVeilMedia, veilAllowed, veilUnavailable);
 
   /* ─── scroll parallax ─── */
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end start"] });
@@ -106,8 +144,76 @@ export default function Hero() {
               decoding="async"
             />
           </picture>
+          {/* The veil sits on top of the artwork it dithers, inside the same parallax
+              wrapper, so both layers travel together as one image.
+
+              `reverse` is the whole idea: the hero opens as the photograph it always
+              was, and the halftone is what the brush *lays down* on it — a 1px bayer
+              screen of near-black ink and amber paper that fades out four seconds later.
+              Turning `reverse` off flips it into a poster that the brush wipes clean.
+
+              Nobody steers it. The canvas sits behind the hero's own content, so a
+              cursor can only reach the slivers of it the headline, the badge and the
+              buttons do not cover, which makes a pointer-driven effect read as broken
+              rather than interactive. So the veil drives itself: `wander` walks the brush
+              along a slow lissajous of its own, and a pointer that does land on it still
+              takes over from there.
+
+              Where it walks is fitted to this artwork rather than to the frame: 86% of
+              the crop is black sky, where ink shows as nothing. `wanderCenter` is the
+              crowd along the bottom edge — the one broad lit band — and `wanderSpeed`
+              0.35 sweeps the brush the full width of it in about 34 seconds. `wanderRise`
+              adds the dancers to the round: whenever that sweep passes under their column
+              the brush climbs the 0.55 of the frame `wanderSpan` asks for, prints them for
+              a few seconds and comes back down to the crowd, which keeps the rest.
+
+              Two deliberate departures from the ReactBits preset:
+
+                · `printFloor` — the print is ink on paper, and this artwork is mostly
+                  pure black: measured, only 13% of the crop has any luminance at all.
+                  Ink marked onto that nothing reads as dirt drifting over the sky
+                  instead of as print, so the veil lets the print land only where the
+                  picture is actually lit — the crowd, the two figures, the beam — and
+                  dissolves it out again towards the darks.
+                · the grading — the reference values assume a daylight photo, so they
+                  crush a night scene this dark into flat ink: simulated over the crop,
+                  they print only 4% of the lit area in amber, which is no effect at all.
+                  These values print about 39%, a halftone that reads as the picture.
+
+              `fit` is `cover` because this is a full-bleed backdrop, not a plate on
+              paper. `alignX` repeats the `object-position` the stylesheet gives the <img>
+              underneath, so the two frame the composition identically and nothing shifts
+              when the canvas fades in over it. */}
+          {showVeil ? (
+            <DitherVeil
+              className="hero__veil"
+              src={veilImage}
+              fit="cover"
+              pattern="bayer"
+              pixelSize={1}
+              levels={2}
+              palette="duotone"
+              alignX={0.65}
+              inkColor="#120f17"
+              paperColor="#eab308"
+              revealRadius={130}
+              softness={0.3}
+              linger={4}
+              rimColor="#4700ff"
+              rim={0}
+              contrast={1.3}
+              brightness={0.5}
+              printFloor={0.01}
+              reverse
+              wander
+              wanderCenter={[0.46, 0.92]}
+              wanderSpan={[0.42, 0.55]}
+              wanderRise={[0.6, 0.16]}
+              wanderSpeed={0.35}
+              clickBurst
+            />
+          ) : null}
         </motion.div>
-        <div className="hero__shade" aria-hidden="true" />
         <a href="#project-walkin" className="hero__featured">
           <span className="signal-dot signal-dot--hero" aria-hidden="true" />
           In development <span className="hero__featured-name">Walkin</span>

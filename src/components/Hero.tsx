@@ -27,9 +27,9 @@ const backgroundSrcSet = (format: string) =>
     .join(", ");
 
 /* ─── dither veil ───
-   The artwork behind the headline gets its own WebGL pass: a two-tone halftone that
-   the cursor prints onto the photograph and that fades back out behind it. Four
-   deliberate limits:
+   The artwork behind the headline gets its own WebGL pass: a two-tone halftone that the
+   brush prints onto the photograph and that fades back out behind it. Four deliberate
+   limits:
 
      · it is loaded as its own client chunk, so ogl never touches the critical path;
      · it never runs for a reduce-motion visitor;
@@ -44,12 +44,20 @@ const DitherVeil = dynamic(() => import("./DitherVeil"), { ssr: false });
 
 const veilImage = `${heroBackground.src}-${heroBackground.fallbackWidth}.avif`;
 
-/* The two conditions the veil needs from the visitor: a mouse, and permission to move.
-   Both are read through `useSyncExternalStore` rather than an effect, because the answer
-   has to be `false` for the server render *and* for the hydration pass — mounting the
-   canvas any earlier tears the whole tree down over a mismatch. Module scope keeps the
-   two functions stable, and it means the veil also follows a settings change live. */
-const VEIL_MEDIA = ["(prefers-reduced-motion: no-preference)", "(hover: hover) and (pointer: fine)"] as const;
+/* The conditions the veil needs from the visitor: a mouse, permission to move, and a
+   window wide enough that the hero is still the desktop layout. Below 760px the
+   stylesheet reframes the <img> (`object-position: 48%`) and the `alignX` the canvas
+   copies from the desktop rule stops matching it, so the print would land offset.
+   All three are read through `useSyncExternalStore` rather than an effect, because the
+   answer has to be `false` for the server render *and* for the hydration pass — mounting
+   the canvas any earlier tears the whole tree down over a mismatch. Module scope keeps
+   the functions stable, and it means the veil also follows a resize or a settings change
+   live. */
+const VEIL_MEDIA = [
+  "(prefers-reduced-motion: no-preference)",
+  "(hover: hover) and (pointer: fine)",
+  "(min-width: 760px)",
+] as const;
 const readVeilMedia = () => VEIL_MEDIA.map((query) => window.matchMedia(query));
 const subscribeVeilMedia = (onChange: () => void) => {
   const queries = readVeilMedia();
@@ -228,10 +236,6 @@ export default function Hero() {
           />
         </a>
         <div className="hero__footer">
-          <p className="hero__intro">
-            WalkinGames creates focused, replayable experiences with strong
-            atmosphere, responsive systems, and worlds that invite one more run.
-          </p>
           <div className="hero__actions">
             <a className="button button--solid" href="#games">
               <span>Explore our games</span>

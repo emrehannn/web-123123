@@ -123,7 +123,7 @@ export default function DevelopmentJourneyPage() {
         </section>
         <section className="shell journey-outro" aria-labelledby="outro-title"><p className="section-kicker">The story continues</p><h2 id="outro-title">Keep walking.</h2><p>Explore Walkin and the systems behind the game.</p><Link href="/#project-walkin" className="button button--solid">Explore Walkin <span aria-hidden="true">↗</span></Link></section>
       </main>
-      <footer className="shell site-footer"><Link href="/">WalkinGames</Link><p>Development journal / March—September 2026</p><a href="#main">Back to top ↑</a></footer>
+      <footer className="shell site-footer"><Link href="/">WalkinGames</Link><p>Development journal / March—September 2026</p><div className="site-footer__links"><Link href="/privacy">Privacy</Link><a href="#main">Back to top ↑</a></div></footer>
     </div>
   );
 }

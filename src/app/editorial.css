@@ -402,6 +402,9 @@ h1, h2, h3, h4 { text-wrap: balance; }
 .contact-section__bottom a:hover span { transform: translate(5px,-5px); }
 .site-footer { min-height: 105px; display: flex; align-items: center; justify-content: space-between; gap: 24px; border-top: 1px solid var(--line-paper); font: 9px/1.6 var(--font-mono); }
 .site-footer > a:last-child { padding-block: 16px; }
+.site-footer__links { display: flex; align-items: center; gap: 24px; }
+.site-footer__links a { padding-block: 16px; }
+.site-footer__links a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .wordmark--footer { font-family: var(--font-body); }
 .wordmark--footer .wordmark__mark { border: 1px solid var(--line-paper); height: 32px; font-size: 28px; }
 

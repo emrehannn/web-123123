@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Reveal from "./motion/Reveal";
 
 export default function ContactSection() {
@@ -27,7 +28,10 @@ export default function ContactSection() {
           <span>Walkin<span>Games</span></span>
         </a>
         <p>&copy; {new Date().getFullYear()} WalkinGames. All rights reserved.</p>
-        <a href="#about">Back to top ↑</a>
+        <div className="site-footer__links">
+          <Link href="/privacy">Privacy</Link>
+          <a href="#about">Back to top ↑</a>
+        </div>
       </footer>
     </section>
   );

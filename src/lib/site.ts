@@ -20,4 +20,5 @@ export const lastModified = {
   home: "2026-09-30",
   journey: "2026-09-30",
   waitlist: "2026-10-09",
+  privacy: "2026-10-28",
 } as const;

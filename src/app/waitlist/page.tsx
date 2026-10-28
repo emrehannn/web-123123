@@ -197,7 +197,10 @@ export default function WaitlistPage() {
       <footer className="shell site-footer">
         <Link href="/">WalkinGames</Link>
         <p>Walkin waitlist / {siteName}</p>
-        <a href="#main">Back to top ↑</a>
+        <div className="site-footer__links">
+          <Link href="/privacy">Privacy</Link>
+          <a href="#main">Back to top ↑</a>
+        </div>
       </footer>
     </div>
   );

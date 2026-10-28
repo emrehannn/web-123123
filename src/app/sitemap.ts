@@ -24,5 +24,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
       images: [`${siteUrl}/images/walkin-icon.png`],
     },
+    {
+      url: `${siteUrl}/privacy`,
+      lastModified: lastModified.privacy,
+      changeFrequency: "yearly",
+      priority: 0.3,
+    },
   ];
 }

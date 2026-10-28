@@ -5,26 +5,20 @@ import { lastModified, ogImageAlt, siteName, siteUrl } from "@/lib/site";
 import "./privacy.css";
 
 /* ─── Values only the controller can supply ──────────────────────────────────────
-   Everything the founders fill in lives in POLICY. A value written as
-   `toFill("…")` renders on the page as a highlighted "[TO FILL: …]" marker;
-   replacing it with the final text (a plain string) fills it everywhere it is used.
-   The page must not ship while any `toFill` is left. */
+   Everything the founders fill in lives in POLICY. The values are final text; the
+   `Value` component still renders a highlighted "[TO FILL: …]" marker for anything
+   left as `{ toFill }`, so an unfinished value can never ship silently. */
 type Fillable = string | { toFill: string };
-const toFill = (need: string): Fillable => ({ toFill: need });
 
 const POLICY = {
-  effectiveDate: toFill("effective date"),
+  effectiveDate: "28 October 2026",
   controller: "Emrehan Dalaman",
   tradingName: "Walkin Games",
   postalAddress: "54292 Trier, Germany",
   phone: "+49 15510871276",
   email: "support@walkingames.com",
   policyUrl: "https://walkingames.com/privacy",
-  taxRetention: toFill("how long tax law requires us to keep exported order records (ask the tax advisor)"),
-  childrenRetentionPolicyLink: toFill("link to the published Children’s Data Retention Policy"),
-  turkiyeSafeguard: toFill(
-    "the safeguard for access to player data from Türkiye, or remove this point if no one outside the EU can reach player data",
-  ),
+  taxRetention: "10 years (section 147 of the German Fiscal Code)",
   authority: {
     name: "Der Landesbeauftragte für den Datenschutz und die Informationsfreiheit Rheinland-Pfalz (LfDI Rheinland-Pfalz)",
     address: "Hintere Bleiche 34, 55116 Mainz, Germany",
@@ -778,10 +772,10 @@ export default function PrivacyPage() {
                   self-certified ad SDKs, and AdMob’s child-directed treatment with a G content rating.
                   Under those flags the networks commit to contextual ads only and to not sharing
                   persistent identifiers with outside bidders. Unity Diagnostics uses the installation ID
-                  only to group crash reports. Retention for each item:{" "}
-                  <Ref to="retention">section 6</Ref> and our Children’s Data Retention Policy (
-                  <Value v={POLICY.childrenRetentionPolicyLink} />
-                  ), which is part of this notice.
+                  only to group crash reports. Retention for each item is in{" "}
+                  <Ref to="retention">section 6</Ref>: crash reports expire after 90 days, ad-network
+                  data follows each network’s policy, and a child’s email is deleted right after we
+                  answer.
                 </p>
                 <p>
                   <strong>In-app purchases by children</strong> go through Google Play or the App Store,
@@ -982,7 +976,10 @@ export default function PrivacyPage() {
                     Privacy Framework.
                   </li>
                   <li>
-                    <Value v={POLICY.turkiyeSafeguard} />
+                    <strong>Türkiye</strong> — access from Türkiye, where one of the two people who make
+                    Walkin lives, is limited to what is needed to run and support the game and is covered
+                    by the European Commission’s <strong>Standard Contractual Clauses</strong> (2021/914)
+                    agreed with that person.
                   </li>
                 </ul>
               </Section>
